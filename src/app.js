@@ -60,11 +60,9 @@ var HelloWorldLayer = cc.Layer.extend({
         this.enemy_bullets = [];
 
         this.score = 0;
-        this.scoreBoard = cc.LabelTTF.create(this.score, "Impact", 28);
-        this.scoreBoard.setFontFillColor(cc.color.YELLOW);
+        this.scoreBoard = cc.LabelTTF.create(this.score.toString(), "Impact", 28);
         this.scoreBoard.setColor(cc.color.YELLOW);
-        //this.scoreBoard.setPosition(cc.p(3*cc.winSize.width/4, cc.winSize.height - 40));
-        this.scoreBoard.setPosition(3 * cc.winSize.width / 4,cc.winSize.height - 40);  // 设置字体
+        this.scoreBoard.setPosition(cc.p(3*cc.winSize.width/4, cc.winSize.height - 40));
         this.addChild(this.scoreBoard);
         return true;
     },
@@ -86,6 +84,9 @@ var HelloWorldLayer = cc.Layer.extend({
                 var bullet = this.bullets[j];
                 var bullet_box = bullet.getBoundingBox();
                 if(cc.rectIntersectsRect(bullet_box, enemy_box)){
+                    this.score ++;
+                    this.scoreBoard.setString(this.score);
+
                     var bullet_index = this.bullets.indexOf(bullet);
                     if(bullet_index>-1){
                         this.bullets.splice(bullet_index, 1);
