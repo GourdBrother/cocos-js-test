@@ -18,6 +18,7 @@ var HelloWorldLayer = cc.Layer.extend({
         // 2. add a menu item with "X" image, which is clicked to quit the program
         //    you may modify it.
         // ask the window size
+        var audioEngine = cc.audioEngine.playEffect(res.back_music, true);
         var size = cc.winSize;
 
         // add a "close" icon to exit the progress. it's an autorelease object
@@ -39,8 +40,13 @@ var HelloWorldLayer = cc.Layer.extend({
         menu.y = 0;
         this.addChild(menu, 1);
 
+        var back = new cc.Sprite(res.back_png);
+        back.setPosition(cc.p(cc.winSize.width/2, cc.winSize.height/2));
+        this.addChild(back);
+
+
         this.hero = new cc.Sprite(res.hero_png);
-        this.hero.setScale(0.25);
+        this.hero.setScale(0.5);
         this.pos = {x:size.width/2, y:size.height/2};
         this.hero.setPosition(cc.p(this.pos.x, this.pos.y));
         this.addChild(this.hero);
@@ -72,6 +78,7 @@ var HelloWorldLayer = cc.Layer.extend({
             var enemy = this.enemys[i];
             var enemy_box = enemy.getBoundingBox();
             if(cc.rectIntersectsRect(hero_box, enemy_box)){
+                this.score -= 2;
                 var enemy_index = this.enemys.indexOf(enemy);
                 if(enemy_index>-1){
                     this.enemys.splice(enemy_index, 1);
@@ -83,19 +90,21 @@ var HelloWorldLayer = cc.Layer.extend({
             for(var j in this.bullets){
                 var bullet = this.bullets[j];
                 var bullet_box = bullet.getBoundingBox();
-                if(cc.rectIntersectsRect(bullet_box, enemy_box)){
-                    this.score ++;
+                if(cc.rectIntersectsRect(bullet_box, enemy_box)) {
+                    this.score++;
                     this.scoreBoard.setString(this.score);
-
                     var bullet_index = this.bullets.indexOf(bullet);
-                    if(bullet_index>-1){
+                    if (bullet_index > -1) {
                         this.bullets.splice(bullet_index, 1);
                         this.removeChild(bullet);
                     }
-                    var enemy_index = this.enemys.indexOf(enemy);
-                    if(enemy_index>-1){
-                        this.enemys.splice(enemy_index, 1);
-                        this.removeChild(enemy);
+                    enemy.life--;
+                    if (enemy.life == 0) {
+                        var enemy_index = this.enemys.indexOf(enemy);
+                        if (enemy_index > -1) {
+                            this.enemys.splice(enemy_index, 1);
+                            this.removeChild(enemy);
+                        }
                     }
                 }
             }
@@ -104,6 +113,7 @@ var HelloWorldLayer = cc.Layer.extend({
             var enemy_bullet = this.enemy_bullets[i];
             var enemy_bullet_box = enemy_bullet.getBoundingBox();
             if(cc.rectIntersectsRect(hero_box, enemy_bullet_box)){
+                this.score --;
                 var enemy_bullet_index = this.enemy_bullets.indexOf(enemy_bullet);
                 if(enemy_bullet_index> -1){
                     this.enemy_bullets.splice(enemy_bullet_index, 1);
@@ -113,8 +123,31 @@ var HelloWorldLayer = cc.Layer.extend({
         }
     },
     enemyUpdate:function(){
-        var target = cc.Sprite.create(res.hero_png);
-        target.setScale(0.25);
+        var enemyTypeNum = parseInt(Math.random()*4);
+        var enemyType;
+        var enemyLife = 1;
+        switch(enemyTypeNum){
+            case 0:
+                enemyType = res.enemy_small_png;
+                break;
+            case 1:
+                enemyType = res.XPlane_png;
+                enemyLife = 2;
+                break;
+            case 2:
+                enemyType = res.LXPlane_png;
+                enemyLife = 2;
+                break;
+            case 3:
+                enemyType = res.GodPlane_png;
+                enemyLife = 3;
+                break;
+            case 4:
+                enemyType = res.enemy_small_png;
+                break;
+        }
+        var target = cc.Sprite.create(enemyType);
+        target.life = enemyLife;
         target.setRotation(180);
         var minX = target.getContentSize().width/2;
         var maxX = cc.winSize.width-target.getContentSize().width/2;
@@ -132,6 +165,7 @@ var HelloWorldLayer = cc.Layer.extend({
 
         //add enemy bullet
         var bullet = cc.Sprite.create(res.bullet_png, cc.rect(0,50,33,70));
+        bullet.setScale(0.5);
         bullet.setRotation(180);
         bullet.setPosition(cc.p(target.x, target.y));
         duration = (target.getPosition().y/cc.winSize.height)*3;
@@ -144,7 +178,7 @@ var HelloWorldLayer = cc.Layer.extend({
     },
     shot:function(){
         var hero_pos = this.hero.getPosition();
-        var bulletDuration = 3;
+        var bulletDuration = 1;
         var bullet = cc.Sprite.create(res.bullet_png, cc.rect(0,0,33,33));
         bullet.setPosition(cc.p(hero_pos.x, hero_pos.y+ bullet.getContentSize().height));
         var time = (cc.winSize.height - hero_pos.y - bullet.getContentSize().height/2)/cc.winSize.height;
@@ -188,13 +222,14 @@ var HelloWorldLayer = cc.Layer.extend({
     onTouchMoved:function(touch, event){
         var point = touch.getLocation();
         this.touch_end = {x:point.x, y:point.y};
+        //通过传入的event的_currentTarget来获得this对象
         event._currentTarget.hero.setPosition(cc.p(point.x, point.y));
     },
     onTouchEnded:function(touch, event){
         var point = touch.getLocation();
         this.touch_end = {x:point.x, y:point.y};
         cc.log("("+this.touch_start.x+","+this.touch_start.y+")("+this.touch_end.x+","+this.touch_end.y+")");
-        event._currentTarget.hero.setPosition(cc.p(this.touch_end.x, this.touch_end.y));
+        //event._currentTarget.hero.setPosition(cc.p(this.touch_end.x, this.touch_end.y));
     }
 });
 
