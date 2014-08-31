@@ -1,5 +1,5 @@
 
-var HelloWorldLayer = cc.Layer.extend({
+var SimplePlaneLayer = cc.Layer.extend({
     hero:null,
     pos:null,
     bullets:null,
@@ -18,26 +18,20 @@ var HelloWorldLayer = cc.Layer.extend({
         // 2. add a menu item with "X" image, which is clicked to quit the program
         //    you may modify it.
         // ask the window size
-        var audioEngine = cc.audioEngine.playEffect(res.back_music, true);
         var size = cc.winSize;
 
         // add a "close" icon to exit the progress. it's an autorelease object
-        var closeItem = new cc.MenuItemImage(
-            res.CloseNormal_png,
-            res.CloseSelected_png,
-            function () {
+        /*var closeItem = new cc.MenuItemImage( res.CloseNormal_png, res.CloseSelected_png, function () {
                 cc.log("Menu is clicked!");
             }, this);
-        closeItem.attr({
+            */
+        var goBackLabel = new cc.LabelTTF("return", "Arial", 22);
+        var goBackLabelItem = new cc.MenuItemLabel(goBackLabel,AllMenuScene.onGameReturnAllMenu);
+        var menu = new cc.Menu(goBackLabelItem);
+        menu.attr({
             x: size.width - 20,
-            y: 20,
-            anchorX: 0.5,
-            anchorY: 0.5
+            y: 20
         });
-
-        var menu = new cc.Menu(closeItem);
-        menu.x = 0;
-        menu.y = 0;
         this.addChild(menu, 1);
 
         var back = new cc.Sprite(res.back_png);
@@ -46,7 +40,7 @@ var HelloWorldLayer = cc.Layer.extend({
 
 
         this.hero = new cc.Sprite(res.hero_png);
-        this.hero.setScale(0.5);
+        this.hero.setScale(0.25);
         this.pos = {x:size.width/2, y:size.height/2};
         this.hero.setPosition(cc.p(this.pos.x, this.pos.y));
         this.addChild(this.hero);
@@ -58,7 +52,7 @@ var HelloWorldLayer = cc.Layer.extend({
             onTouchMoved: this.onTouchMoved,
             onTouchEnded: this.onTouchEnded
         }, this);
-        this.schedule(this.shot, 0.5);
+        this.schedule(this.shot, 0.1);
         this.schedule(this.enemyUpdate, 0.5);
         this.schedule(this.hit);
         this.bullets = [];
@@ -90,21 +84,20 @@ var HelloWorldLayer = cc.Layer.extend({
             for(var j in this.bullets){
                 var bullet = this.bullets[j];
                 var bullet_box = bullet.getBoundingBox();
-                if(cc.rectIntersectsRect(bullet_box, enemy_box)) {
-                    this.score++;
+                if(cc.rectIntersectsRect(bullet_box, enemy_box)){
+                    this.score ++;
                     this.scoreBoard.setString(this.score);
+                    cc.audioEngine.playEffect(res.hit_mp3);
+
                     var bullet_index = this.bullets.indexOf(bullet);
-                    if (bullet_index > -1) {
+                    if(bullet_index>-1){
                         this.bullets.splice(bullet_index, 1);
                         this.removeChild(bullet);
                     }
-                    enemy.life--;
-                    if (enemy.life == 0) {
-                        var enemy_index = this.enemys.indexOf(enemy);
-                        if (enemy_index > -1) {
-                            this.enemys.splice(enemy_index, 1);
-                            this.removeChild(enemy);
-                        }
+                    var enemy_index = this.enemys.indexOf(enemy);
+                    if(enemy_index>-1){
+                        this.enemys.splice(enemy_index, 1);
+                        this.removeChild(enemy);
                     }
                 }
             }
@@ -123,31 +116,8 @@ var HelloWorldLayer = cc.Layer.extend({
         }
     },
     enemyUpdate:function(){
-        var enemyTypeNum = parseInt(Math.random()*4);
-        var enemyType;
-        var enemyLife = 1;
-        switch(enemyTypeNum){
-            case 0:
-                enemyType = res.enemy_small_png;
-                break;
-            case 1:
-                enemyType = res.XPlane_png;
-                enemyLife = 2;
-                break;
-            case 2:
-                enemyType = res.LXPlane_png;
-                enemyLife = 2;
-                break;
-            case 3:
-                enemyType = res.GodPlane_png;
-                enemyLife = 3;
-                break;
-            case 4:
-                enemyType = res.enemy_small_png;
-                break;
-        }
-        var target = cc.Sprite.create(enemyType);
-        target.life = enemyLife;
+        var target = cc.Sprite.create(res.hero_png);
+        target.setScale(0.25);
         target.setRotation(180);
         var minX = target.getContentSize().width/2;
         var maxX = cc.winSize.width-target.getContentSize().width/2;
@@ -165,7 +135,6 @@ var HelloWorldLayer = cc.Layer.extend({
 
         //add enemy bullet
         var bullet = cc.Sprite.create(res.bullet_png, cc.rect(0,50,33,70));
-        bullet.setScale(0.5);
         bullet.setRotation(180);
         bullet.setPosition(cc.p(target.x, target.y));
         duration = (target.getPosition().y/cc.winSize.height)*3;
@@ -178,13 +147,14 @@ var HelloWorldLayer = cc.Layer.extend({
     },
     shot:function(){
         var hero_pos = this.hero.getPosition();
-        var bulletDuration = 1;
+        var bulletDuration = 0.5;
         var bullet = cc.Sprite.create(res.bullet_png, cc.rect(0,0,33,33));
         bullet.setPosition(cc.p(hero_pos.x, hero_pos.y+ bullet.getContentSize().height));
         var time = (cc.winSize.height - hero_pos.y - bullet.getContentSize().height/2)/cc.winSize.height;
         var actionMove = cc.MoveTo.create(bulletDuration *time, cc.p(hero_pos.x, cc.winSize.height));
         var actionMoveDone = cc.CallFunc.create(this.Fin, this);
         bullet.runAction(cc.Sequence.create(actionMove, actionMoveDone));
+        cc.audioEngine.playMusic(res.shot_mp3);
         bullet.setTag(1);
         this.addChild(bullet);
         this.bullets.push(bullet);
@@ -233,10 +203,10 @@ var HelloWorldLayer = cc.Layer.extend({
     }
 });
 
-var HelloWorldScene = cc.Scene.extend({
+var SimplePlaneScene = cc.Scene.extend({
     onEnter:function () {
         this._super();
-        var layer = new HelloWorldLayer();
+        var layer = new SimplePlaneLayer();
         this.addChild(layer);
     }
 });
