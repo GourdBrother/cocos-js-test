@@ -56,7 +56,7 @@ var AllMenuLayer = cc.Layer.extend({
         return gameMenuGroup;
     },
     onChooseGame:function(target){
-        var gameName = target._target;
+        var gameName = this.toString();
         console.log("choose game:"+gameName);
         var gameSceneType;
         var gameResType;

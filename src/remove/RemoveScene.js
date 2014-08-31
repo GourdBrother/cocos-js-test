@@ -30,7 +30,7 @@ var RemoveLayer = cc.Layer.extend({
                 var brick = new cc.Sprite(brickType);
                 brick.attr({ x:x_start+38*j, y:y_start+38*i });
                 line.push({x:brick.x, y:brick.y, z:brickIndex});
-                this.addChild(brick, 1);
+                this.addChild(brick, 2);
             }
             this.bricks.push(line);
         }
@@ -45,22 +45,25 @@ var RemoveLayer = cc.Layer.extend({
         back.attr({ x:winSize.width/2, y:winSize.height/2 });
         this.addChild(back, 1);
 
-        var rect = new cc.LayerColor();
-        rect.init(cc.color.RED, 200, 200);
-        rect.attr({x:200, y:200});
-        this.addChild(rect, 2);
-
         this.initCandys();
         cc.eventManager.addListener({
-            event: cc.EventListener.KEYBOARD,
-            onKeyPressed:this.onKeyPressed,
-            onKeyReleased:this.onKeyReleased
+            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            swallowTouches: true,
+            onTouchBegan: this.onTouchBegan,
+            onTouchMoved: this.onTouchMoved,
+            onTouchEnded: this.onTouchEnded
         }, this);
     },
-    onKeyPressed:function(){
-        console.log("press");
+    onTouchEnded:function(){
+        console.log("touch end");
     },
-    onKeyReleased:function(){
-        console.log("released");
+    onTouchBegan:function(){
+        console.log("touch begin");
+        return true;
+    },
+    onTouchMoved:function(touch){
+        console.log("moved");
+        var start = touch.getStartLocation();
+        var end = touch.getLocation();
     }
 });

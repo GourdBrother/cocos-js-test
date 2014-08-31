@@ -52,6 +52,11 @@ var SimplePlaneLayer = cc.Layer.extend({
             onTouchMoved: this.onTouchMoved,
             onTouchEnded: this.onTouchEnded
         }, this);
+        cc.eventManager.addListener({
+            event: cc.EventListener.KEYBOARD,
+            onKeyPressed:this.onKeyPressed,
+            onKeyReleased:this.onKeyReleased
+        }, this);
         this.schedule(this.shot, 0.1);
         this.schedule(this.enemyUpdate, 0.5);
         this.schedule(this.hit);
@@ -126,9 +131,9 @@ var SimplePlaneLayer = cc.Layer.extend({
         var maxDuration = 10.0;
         var duration = minDuration + (maxDuration-minDuration)*Math.random();
         target.setPosition(cc.p(x, cc.winSize.height-target.getContentSize().height/2));
-        var actionMove = cc.MoveTo.create(duration, cc.p(x, -target.getContentSize().height));
-        var actionMoveDone = cc.CallFunc.create(this.Fin, this);
-        target.runAction(cc.Sequence.create(actionMove, actionMoveDone));
+        var actionMove = new cc.MoveTo (duration, cc.p(x, -target.getContentSize().height));
+        var actionMoveDone = new cc.CallFunc(this.Fin, this);
+        target.runAction(new cc.Sequence(actionMove, actionMoveDone));
         target.setTag(2);
         this.addChild(target);
         this.enemys.push(target);
@@ -138,9 +143,9 @@ var SimplePlaneLayer = cc.Layer.extend({
         bullet.setRotation(180);
         bullet.setPosition(cc.p(target.x, target.y));
         duration = (target.getPosition().y/cc.winSize.height)*3;
-        actionMove = cc.MoveTo.create(duration, cc.p(target.getPosition().x, 0));
-        actionMoveDone = cc.CallFunc.create(this.Fin, this);
-        bullet.runAction(cc.Sequence.create(actionMove, actionMoveDone));
+        actionMove = new cc.MoveTo(duration, cc.p(target.getPosition().x, 0));
+        actionMoveDone = new cc.CallFunc(this.Fin, this);
+        bullet.runAction(new cc.Sequence(actionMove, actionMoveDone));
         bullet.setTag(3);
         this.addChild(bullet);
         this.enemy_bullets.push(bullet);
@@ -184,22 +189,50 @@ var SimplePlaneLayer = cc.Layer.extend({
         }
     },
     onTouchBegan:function(touch, event){
+        console.log("touch begin");
         var point = touch.getLocation();
         //注意这里的touch_start是当前listener类的元素，不是layer的
         this.touch_start = {x:point.x, y:point.y};
         return true;
     },
     onTouchMoved:function(touch, event){
+        console.log("touch moved");
         var point = touch.getLocation();
         this.touch_end = {x:point.x, y:point.y};
         //通过传入的event的_currentTarget来获得this对象
         event._currentTarget.hero.setPosition(cc.p(point.x, point.y));
     },
     onTouchEnded:function(touch, event){
+        console.log("touch end");
         var point = touch.getLocation();
         this.touch_end = {x:point.x, y:point.y};
         cc.log("("+this.touch_start.x+","+this.touch_start.y+")("+this.touch_end.x+","+this.touch_end.y+")");
         //event._currentTarget.hero.setPosition(cc.p(this.touch_end.x, this.touch_end.y));
+    },
+    onKeyPressed:function(key, event){
+        console.log("press");
+        var x_move = 0;
+        var y_move=0;
+        var move_distance = 40;
+        var hero = event._currentTarget.hero;
+        switch(key) {
+            case 37:
+                x_move = -move_distance;
+                break;
+            case 38:
+                y_move = move_distance;
+                break;
+            case 39:
+                x_move = move_distance;
+                break;
+            case 40:
+                y_move = -move_distance;
+                break;
+        }
+        hero.setPosition(cc.p(hero.x+x_move, hero.y+y_move));
+    },
+    onKeyReleased:function(key, event){
+        console.log("released");
     }
 });
 
