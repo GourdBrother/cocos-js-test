@@ -3,6 +3,7 @@
  * Created by WG on 2014/8/31.
  */
 var RemoveScene =  cc.Scene.extend({
+    bricks:null,
     onEnter:function(){
         this._super();
         var removeLayer = new RemoveLayer();
@@ -14,28 +15,6 @@ var RemoveLayer = cc.Layer.extend({
         this._super();
         this.init();
     },
-    bricks:[],
-    row:6,
-    column:6,
-    brickTypes:[res.brick_yellow_png, res.brick_green_png, res.brick_red_png],
-    initCandys:function(){
-        this.bricks = [];
-        var x_start = cc.winSize.width/2 - 2.5 * 34;
-        var y_start = cc.winSize.height/2 - 2.5 * 34;
-        for(var i = 0; i< this.row; i++){
-            var line = [];
-            for(var j = 0; j< this.column; j++){
-                var brickIndex = Math.floor(Math.random()*this.brickTypes.length);
-                var brickType = this.brickTypes[brickIndex];
-                var brick = new cc.Sprite(brickType);
-                brick.attr({ x:x_start+38*j, y:y_start+38*i });
-                line.push({x:brick.x, y:brick.y, z:brickIndex});
-                this.addChild(brick, 2);
-            }
-            this.bricks.push(line);
-        }
-        console.log(this.bricks);
-    },
     onTouchesEnded:function(touches, event){
         console.log("touch end");
     },
@@ -45,7 +24,8 @@ var RemoveLayer = cc.Layer.extend({
         back.attr({ x:winSize.width/2, y:winSize.height/2 });
         this.addChild(back, 1);
 
-        this.initCandys();
+        var bricks = new Bricks(6, 6, this);
+        this.bricks = bricks;
         cc.eventManager.addListener({
             event: cc.EventListener.TOUCH_ONE_BY_ONE,
             swallowTouches: true,
@@ -53,17 +33,45 @@ var RemoveLayer = cc.Layer.extend({
             onTouchMoved: this.onTouchMoved,
             onTouchEnded: this.onTouchEnded
         }, this);
+        var goBackLabel = new cc.LabelTTF("return", "Arial", 22);
+        var retryLabel = new cc.LabelTTF("retry", "Arial", 22);
+        var goBackLabelItem = new cc.MenuItemLabel(goBackLabel, AllMenuScene.onGameReturnAllMenu);
+        var retryLabelItem = new cc.MenuItemLabel(retryLabel ,this.onRetry, this);
+        var backMenu = new cc.Menu(retryLabelItem, goBackLabelItem);
+        this.addChild(backMenu, 2);
+        backMenu.alignItemsVerticallyWithPadding(20);
+        backMenu.attr({
+            x: cc.winSize.width - 30,
+            y: 40
+        });
     },
-    onTouchEnded:function(){
-        console.log("touch end");
+    onRetry:function(){
+        this.bricks.ReColorAll();
     },
-    onTouchBegan:function(){
-        console.log("touch begin");
+    onTouchEnded:function(touch, event){
+        var location = touch.getLocation();
+        var last_brick = event._currentTarget.bricks.PosToBrick(this.last_touch_begin);
+        if(last_brick.x == -1 || last_brick.y == -1){
+            console.log("from envalid");
+            return ;
+        }
+        var now_brick = event._currentTarget.bricks.PosToBrick(location);
+        if(now_brick.x == -1 || now_brick.y == -1){
+            console.log("to envalid");
+            return ;
+        }
+        if(Math.abs(now_brick.x - last_brick.x) + Math.abs(now_brick.y - last_brick.y) == 1){
+            console.log("from ("+last_brick.x+","+last_brick.y+") to ("+now_brick.x+","+now_brick.y+")");
+            event._currentTarget.bricks.BrickSwitch(last_brick, now_brick);
+        }
+    },
+    last_touch_begin:null,
+    onTouchBegan:function(touch){
+        this.last_touch_begin = touch.getLocation();
         return true;
     },
     onTouchMoved:function(touch){
-        console.log("moved");
-        var start = touch.getStartLocation();
-        var end = touch.getLocation();
+        //var brick_index = this.bricks.PosToBrick(start.x, start.y);
+        //console.log(brick_index);
     }
 });

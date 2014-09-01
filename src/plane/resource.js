@@ -15,9 +15,13 @@ var res = {
     shot_mp3:"res/Music/fireEffect.mp3",
     hit_mp3:"res/Music/explodeEffect.mp3",
     brick_green_png:"res/candy/green.png",
+    brick_null_png:"res/candy/null.png",
     brick_yellow_png:"res/candy/yellow.png",
     brick_red_png:"res/candy/red.png",
-    brick_back_png:"res/candy/back.png"
+    brick_back_png:"res/candy/back.png",
+    brick_pink_png:"res/candy/pink.png",
+    brick_orange_png:"res/candy/orange.png",
+    brick_blue_png:"res/candy/blue.png"
 
 };
 
@@ -26,7 +30,16 @@ var g_allmenures = [
     res.allmenuback_jpg
 ];
 var g_planemenures = [];
-var g_removeres = [];
+var g_removeres = [
+    res.brick_back_png,
+    res.brick_null_png,
+    res.brick_red_png,
+    res.brick_green_png,
+    res.brick_yellow_png,
+    res.brick_blue_png,
+    res.brick_orange_png,
+    res.brick_pink_png
+];
 var g_simpleplaneres=[];
 for (var i in res) {
     //for simple codeing, and make long loading time
