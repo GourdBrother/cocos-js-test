@@ -114,7 +114,7 @@ var Bricks = cc.Class.extend({
         }
         return {x:Math.floor(x_index) , y:Math.floor(y_index)};
     },
-    Switch:function(pos1, pos2) {
+    Switch:function(pos1, pos2, back) {
         var brick1 = this.bricks[pos1.y][pos1.x];
         var brick2 = this.bricks[pos2.y][pos2.x];
         var texture1 = brick1.getTexture();
@@ -125,13 +125,25 @@ var Bricks = cc.Class.extend({
         var color2 = brick2.colorType;
         brick1.colorType = color2;
         brick2.colorType = color1;
-        this.CheckAllLoop();
+        var change =  function(obj, data, texture, color){
+            data.setTexture(texture);
+            data.colorType = color;
+        }
+        var change1 = new cc.CallFunc(change, this, brick1, texture2, color2);
+        var change2 = new cc.CallFunc(change, this, brick2, texture1, color1);
+        brick1.runAction(cc.sequence(cc.moveTo(0.5, cc.p(brick2.x, brick2.y))), change1);
+        brick2.runAction(new cc.MoveTo(0.5, cc.p(brick1.x, brick1.y)), change2);
+        if(back){
+            return 1;
+        }
+        return this.CheckAllLoop();
     },
     CheckAllLoop:function(){
         var checkTimes = 0;
         while(this.CheckAll(checkTimes) > 0){
             checkTimes ++;
         }
+        return checkTimes;
     },
     CheckAll:function(checkTimes){
         var removeCount = 0;

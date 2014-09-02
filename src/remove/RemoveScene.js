@@ -65,7 +65,12 @@ var RemoveLayer = cc.Layer.extend({
         }
         if(Math.abs(now_brick.x - last_brick.x) + Math.abs(now_brick.y - last_brick.y) == 1){
             console.log("from ("+last_brick.x+","+last_brick.y+") to ("+now_brick.x+","+now_brick.y+")");
-            event._currentTarget.bricks.Switch(last_brick, now_brick);
+            var result = event._currentTarget.bricks.Switch(last_brick, now_brick, false);
+            //change failed
+            if(result === 0){
+                event._currentTarget.bricks.Switch(now_brick, last_brick, true);
+
+            }
         }
     },
     last_touch_begin:null,
