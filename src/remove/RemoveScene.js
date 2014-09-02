@@ -35,18 +35,21 @@ var RemoveLayer = cc.Layer.extend({
         }, this);
         var goBackLabel = new cc.LabelTTF("return", "Arial", 22);
         var retryLabel = new cc.LabelTTF("retry", "Arial", 22);
+        var checkLabel = new cc.LabelTTF("check", "Arial", 22);
         var goBackLabelItem = new cc.MenuItemLabel(goBackLabel, AllMenuScene.onGameReturnAllMenu);
+        var checkLabelItem = new cc.MenuItemLabel(checkLabel, this.bricks.CheckAllLoop, this.bricks);
         var retryLabelItem = new cc.MenuItemLabel(retryLabel ,this.onRetry, this);
-        var backMenu = new cc.Menu(retryLabelItem, goBackLabelItem);
+        var backMenu = new cc.Menu(checkLabelItem, retryLabelItem, goBackLabelItem);
         this.addChild(backMenu, 2);
         backMenu.alignItemsVerticallyWithPadding(20);
         backMenu.attr({
             x: cc.winSize.width - 30,
-            y: 40
+            y: 60
         });
     },
     onRetry:function(){
         this.bricks.ReColorAll();
+        this.bricks.CheckAllLoop();
     },
     onTouchEnded:function(touch, event){
         var location = touch.getLocation();
@@ -62,7 +65,7 @@ var RemoveLayer = cc.Layer.extend({
         }
         if(Math.abs(now_brick.x - last_brick.x) + Math.abs(now_brick.y - last_brick.y) == 1){
             console.log("from ("+last_brick.x+","+last_brick.y+") to ("+now_brick.x+","+now_brick.y+")");
-            event._currentTarget.bricks.BrickSwitch(last_brick, now_brick);
+            event._currentTarget.bricks.Switch(last_brick, now_brick);
         }
     },
     last_touch_begin:null,

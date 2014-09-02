@@ -23,49 +23,52 @@ var Brick = cc.Sprite.extend({
      */
     ReColor:function(args) {
         var color = args.color;
+        var oldColor = args.oldColor;
+        var checkTimes = args.checkTimes;
         var time = args.time;
         var png_name;
         //not give the color, random it
-        if(color === undefined){
-           color = Math.floor(Math.random()*this.colorCount)+1;
+        if (color === undefined) {
+            color = Math.floor(Math.random() * this.colorCount) + 1;
         }
-        switch(color){
-            case 0:
-                png_name = res.brick_null_png;
-                break;
-            case 1:
-                png_name = res.brick_yellow_png;
-                break;
-            case 2:
-                png_name = res.brick_red_png;
-                break;
-            case 3:
-                png_name = res.brick_green_png;
-                break;
-            case 4:
-                png_name = res.brick_blue_png;
-                break;
-            case 5:
-                png_name = res.brick_orange_png;
-                break;
-            case 6:
-                png_name = res.brick_pink_png;
-                break;
-            default:
-                color = 0;
-                png_name = res.brick_null_png;
-                break;
+        this.colorType = color;
+        var png_name = Bricks.ColorRes[color];
+        var old_png_name;
+        if(oldColor != undefined){
+            old_png_name = Bricks.ColorRes[oldColor];
         }
-        if(time > 0) {
-            this.runAction(new cc.FadeTo(time, 0));
+        var min = new cc.ScaleTo(0.2, 0.1);
+        var max = new cc.ScaleTo(0.2, 1);
+        var func= function(obj, data){
+            this.setTexture(data);
+        };
+        var change = new cc.CallFunc(func, this, png_name);
+        this.runAction( new cc.Sequence( new cc.DelayTime(checkTimes), min,change, max));
+
+
+        // use framespite to acheieve one brick to another brick
+        /*var old_png_name;
+        if (oldColor != undefined) {
+            old_png_name = Bricks.ColorRes[oldColor];
         }
-        this.setTexture(png_name);
-        if(time> 0) {
-            this.runAction(new cc.FadeTo(time, 255));
+        var animation = new cc.Animation();
+        if (oldColor != undefined) {
+            animation.addSpriteFrameWithFile(old_png_name);
         }
+        animation.addSpriteFrameWithFile(png_name);
+        animation.setDelayPerUnit(0.2/2);
+        var action =  new cc.Animate(animation);
+        this.runAction(action);
+        */
+
         this.remove = false;
         return color;
+    },
+    test:function(){
+       var animation = new cc.Animate();
+        animation.addSpriteF
     }
+
 });
 var Bricks = cc.Class.extend({
     row_num:null,
@@ -95,6 +98,7 @@ var Bricks = cc.Class.extend({
            }
            this.bricks.push(line);
         }
+        this.CheckAllLoop();
     },
     PosToBrick:function(pos){
         var x= pos.x;
@@ -117,12 +121,19 @@ var Bricks = cc.Class.extend({
         var texture2 = brick2.getTexture();
         brick1.setTexture(texture2);
         brick2.setTexture(texture1);
+        var color1 = brick1.colorType;
+        var color2 = brick2.colorType;
+        brick1.colorType = color2;
+        brick2.colorType = color1;
+        this.CheckAllLoop();
     },
     CheckAllLoop:function(){
-        while(this.CheckAll() > 0){
+        var checkTimes = 0;
+        while(this.CheckAll(checkTimes) > 0){
+            checkTimes ++;
         }
     },
-    CheckAll:function(){
+    CheckAll:function(checkTimes){
         var removeCount = 0;
         for(var i = 0; i< this.row_num; i++){
             var sameNum = 0;
@@ -183,11 +194,12 @@ var Bricks = cc.Class.extend({
         for(var i = 0; i< this.row_num; i++){
             for(var j = 0; j< this.column_num; j++) {
                 if(this.bricks[i][j].remove == true){
-                    console.log(this.bricks[i][j].ReColor({color:undefined, time:0.5}));
+                    this.bricks[i][j].ReColor({color:undefined, time:0.5, oldColor:this.bricks[i][j].colorType, checkTimes:checkTimes});
                     removeCount ++;
                 }
             }
         }
+        cc.log(removeCount);
         return removeCount;
     },
     CheckPos:function(pos1){
@@ -200,3 +212,12 @@ var Bricks = cc.Class.extend({
         }
     }
 });
+Bricks.ColorRes = [
+    res.brick_null_png,
+    res.brick_yellow_png,
+    res.brick_red_png,
+    res.brick_green_png,
+    res.brick_blue_png,
+    res.brick_orange_png,
+    res.brick_pink_png
+];
