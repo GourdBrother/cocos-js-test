@@ -12,7 +12,7 @@ var Brick = cc.Sprite.extend({
         this._super();
         this.row = row;
         this.column = column;
-        this.colorType = this.ReColor({color:undefined, time:0});
+        this.colorType = this.ReColor({color:undefined, waitTime:0});
     },
 
     /**
@@ -24,7 +24,7 @@ var Brick = cc.Sprite.extend({
     ReColor:function(args) {
         var color = args.color;
         var oldColor = args.oldColor;
-        var checkTimes = args.checkTimes;
+        var waitTime = args.waitTime;
         var time = args.time;
         var png_name;
         //not give the color, random it
@@ -43,7 +43,7 @@ var Brick = cc.Sprite.extend({
             this.setTexture(data);
         };
         var change = new cc.CallFunc(func, this, png_name);
-        this.runAction( new cc.Sequence( new cc.DelayTime(checkTimes), min,change, max));
+        this.runAction( new cc.Sequence( new cc.DelayTime(waitTime), min,change, max));
 
 
         // use framespite to acheieve one brick to another brick
@@ -60,13 +60,10 @@ var Brick = cc.Sprite.extend({
         var action =  new cc.Animate(animation);
         this.runAction(action);
         */
-
         this.remove = false;
         return color;
     },
     test:function(){
-       var animation = new cc.Animate();
-        animation.addSpriteF
     }
 
 });
@@ -80,6 +77,7 @@ var Bricks = cc.Class.extend({
     center_y:null,
     start_x:null,
     start_y:null,
+    score:0,
     ctor:function(row, column, layer){
         this.row_num = row;
         this.column_num = column;
@@ -98,7 +96,9 @@ var Bricks = cc.Class.extend({
            }
            this.bricks.push(line);
         }
-        this.CheckAllLoop();
+        //here sleep 1 for first show all brick has action, must wait
+        //then after create brick, if some can remove, it's remove action can gap with create action
+        this.CheckAllLoop(1);
     },
     PosToBrick:function(pos){
         var x= pos.x;
@@ -114,38 +114,84 @@ var Bricks = cc.Class.extend({
         }
         return {x:Math.floor(x_index) , y:Math.floor(y_index)};
     },
-    Switch:function(pos1, pos2, back) {
+    Switch:function(pos1, pos2) {
         var brick1 = this.bricks[pos1.y][pos1.x];
         var brick2 = this.bricks[pos2.y][pos2.x];
         var texture1 = brick1.getTexture();
         var texture2 = brick2.getTexture();
-        brick1.setTexture(texture2);
-        brick2.setTexture(texture1);
         var color1 = brick1.colorType;
         var color2 = brick2.colorType;
-        brick1.colorType = color2;
-        brick2.colorType = color1;
-        var change =  function(obj, data, texture, color){
-            data.setTexture(texture);
-            data.colorType = color;
-        }
-        var change1 = new cc.CallFunc(change, this, brick1, texture2, color2);
-        var change2 = new cc.CallFunc(change, this, brick2, texture1, color1);
-        brick1.runAction(cc.sequence(cc.moveTo(0.5, cc.p(brick2.x, brick2.y))), change1);
-        brick2.runAction(new cc.MoveTo(0.5, cc.p(brick1.x, brick1.y)), change2);
-        if(back){
-            return 1;
-        }
-        return this.CheckAllLoop();
+//unused code, because moveto actually change two sprite, need not to reset color
+//        var change =  function(obj, data){
+//            var brick = data.brick;
+//            var texture= data.texture;
+//            var color= data.color;
+//            brick.setTexture(texture);
+//            brick.colorType = color;
+//            cc.log(brick.colorType +"->" + color);
+//        }
+//        var change1 = new cc.CallFunc(change, this, {brick:brick1, texture:texture2, color:color2});
+//        var change2 = new cc.CallFunc(change, this, {brick:brick2, texture:texture1, color:color1});
+//        brick1.runAction(cc.sequence(cc.moveTo(0.5, cc.p(brick2.x, brick2.y)) ), change1);
+//        brick2.runAction(cc.sequence(cc.moveTo(0.5, cc.p(brick1.x, brick1.y)) ), change2);
+
+        var switchCheckAfterMove = function(obj, args){
+            var brick1 = args.brick1;
+            var brick2 = args.brick2;
+            var first = args.first;
+            //swift two brick in bricks because has already move to each other
+            var row_temp = brick1.row;
+            brick1.row = brick2.row;
+            brick2.row = row_temp;
+            var column_temp = brick1.column;
+            brick1.column = brick2.column;
+            brick2.column = column_temp;
+
+            this.bricks[brick1.row][brick1.column] = brick1;
+            this.bricks[brick2.row][brick2.column] = brick2;
+            //revert move, not check
+            if(!first){
+                return ;
+            }
+            //first move,after swift action finished, check
+            var success = this.CheckAllLoop(0);
+            if(success == 0){
+                //move failed, revert two brick, move back and restore two brick in bricks's array
+                var call_back_switch_check_failed = cc.callFunc(switchCheckAfterMove, this, {brick1:brick1, brick2:brick2, first:false});
+                brick1.runAction(cc.sequence(cc.moveTo(0.5, cc.p(brick2.x, brick2.y)), call_back_switch_check_failed));
+                brick2.runAction(cc.moveTo(0.5, cc.p(brick1.x, brick1.y)));
+            }
+        };
+        var call_back_switch_check = cc.callFunc(switchCheckAfterMove, this, {brick1:brick1, brick2:brick2, first:true});
+        //first move , after move check is available
+        brick1.runAction(cc.sequence(cc.moveTo(0.5, cc.p(brick2.x, brick2.y)), call_back_switch_check));
+        brick2.runAction(cc.moveTo(0.5, cc.p(brick1.x, brick1.y)));
     },
-    CheckAllLoop:function(){
+    /**
+     *
+     * @param waitTime(action waitTime)
+     * when game start ,it should be more than 0, for
+     * @returns {number}
+     * @constructor
+     */
+    CheckAllLoop:function(waitTime){
         var checkTimes = 0;
-        while(this.CheckAll(checkTimes) > 0){
+        while(this.CheckAll(waitTime) > 0){
             checkTimes ++;
+            waitTime += 0.5;
         }
         return checkTimes;
     },
-    CheckAll:function(checkTimes){
+    /**
+     *
+     * @param checkTimes:sleep time before action run, this value make different remove action different happen
+     *  for a, b, c remove, and create d,e,f replace a,b,c and it happened d,e,f remove again,so this second remove
+     *  action sleep 1s more than first remove action
+     * @returns {number}
+     * @constructor
+     */
+    CheckAll:function(waitTime){
+        cc.log("check once");
         var removeCount = 0;
         for(var i = 0; i< this.row_num; i++){
             var sameNum = 0;
@@ -163,6 +209,7 @@ var Bricks = cc.Class.extend({
                            //this.bricks[i][j-1-k].setTexture(res.brick_null_png);
                            this.bricks[i][j-1-k].remove = true;
                        }
+                       this.PlayClean();
                    }
                    lastColor = thisColor;
                    sameNum = 1;
@@ -172,6 +219,7 @@ var Bricks = cc.Class.extend({
                 for (var k = 0; k < sameNum; k++) {
                     //this.bricks[i][this.column_num-1-k].setTexture(res.brick_null_png);
                     this.bricks[i][j-1-k].remove = true;
+                    this.PlayClean();
                 }
             }
         }
@@ -191,6 +239,7 @@ var Bricks = cc.Class.extend({
                             //this.bricks[i][j-1-k].setTexture(res.brick_null_png);
                             this.bricks[j-1-k][i].remove = true;
                         }
+                        this.PlayClean();
                     }
                     lastColor = thisColor;
                     sameNum = 1;
@@ -200,21 +249,27 @@ var Bricks = cc.Class.extend({
                 for (var k = 0; k < sameNum; k++) {
                     //this.bricks[i][this.column_num-1-k].setTexture(res.brick_null_png);
                     this.bricks[j-1-k][i].remove = true;
+                    this.PlayClean();
                 }
             }
         }
         for(var i = 0; i< this.row_num; i++){
             for(var j = 0; j< this.column_num; j++) {
                 if(this.bricks[i][j].remove == true){
-                    this.bricks[i][j].ReColor({color:undefined, time:0.5, oldColor:this.bricks[i][j].colorType, checkTimes:checkTimes});
+                    this.bricks[i][j].ReColor({color:undefined, time:0.5, oldColor:this.bricks[i][j].colorType, waitTime:waitTime});
                     removeCount ++;
+                    this.score ++;
+                    cc.log("score +1");
                 }
             }
         }
-        cc.log(removeCount);
         return removeCount;
     },
     CheckPos:function(pos1){
+    },
+    PlayClean:function(){
+        cc.audioEngine.setEffectsVolume(0.3);
+        cc.audioEngine.playEffect(res.brick_clean_mp3, false);
     },
     ReColorAll:function(){
         for(var i = 0; i< this.row_num; i++) {
@@ -222,8 +277,29 @@ var Bricks = cc.Class.extend({
                 this.bricks[i][j].ReColor({color:undefined , time:0});
             }
         }
+    },
+    ShowAll:function(){
+        var bricks = this.bricks;
+        for(var i in bricks){
+            var line = bricks[bricks.length -1 - i];
+            var line_log = "";
+            for(var j in line){
+                var brick = line[j];
+                line_log += "("+brick.row + ","+brick.column +"," +Bricks.Color[brick.colorType]+")";
+            }
+            cc.log(line_log);
+        }
     }
 });
+Bricks.Color=[
+   "empty",
+    "yellow",
+    "red",
+    "green",
+    "blue",
+    "orange",
+    "pink"
+]
 Bricks.ColorRes = [
     res.brick_null_png,
     res.brick_yellow_png,

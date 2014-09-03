@@ -20,6 +20,8 @@
         "src/plane/effect.js",
 
         "src/remove/Brick.js",
-        "src/remove/RemoveScene.js"
+        "src/remove/RemoveScene.js",
+        "src/remove/GameOver.js",
+        "src/remove/Config.js"
     ]
 }

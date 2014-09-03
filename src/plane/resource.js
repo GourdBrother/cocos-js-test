@@ -21,7 +21,9 @@ var res = {
     brick_back_png:"res/candy/back.png",
     brick_pink_png:"res/candy/pink.png",
     brick_orange_png:"res/candy/orange.png",
-    brick_blue_png:"res/candy/blue.png"
+    brick_blue_png:"res/candy/blue.png",
+    brick_back_mp3:"res/candy/back.mp3",
+    brick_clean_mp3:"res/candy/clean.mp3"
 
 };
 
@@ -38,7 +40,9 @@ var g_removeres = [
     res.brick_yellow_png,
     res.brick_blue_png,
     res.brick_orange_png,
-    res.brick_pink_png
+    res.brick_pink_png,
+    res.brick_back_mp3,
+    res.brick_clean_mp3
 ];
 var g_simpleplaneres=[];
 for (var i in res) {

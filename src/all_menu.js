@@ -19,6 +19,7 @@ AllMenuScene.onGameReturnAllMenu = function(){
 var AllMenuLayer = cc.Layer.extend({
     ctor:function(){
         this._super();
+        var action = cc.sequence(cc.time)
         this.init();
     },
     init:function(){
@@ -82,7 +83,7 @@ var AllMenuLayer = cc.Layer.extend({
         }
         cc.LoaderScene.preload(gameResType, function () {
             var scene = new gameSceneType();
-            cc.director.runScene(new cc.TransitionFade(1.2, scene));
+            cc.director.runScene(new cc.TransitionFade(0.5, scene));
         }, this);
     }
 });
