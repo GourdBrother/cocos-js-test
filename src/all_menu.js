@@ -19,7 +19,6 @@ AllMenuScene.onGameReturnAllMenu = function(){
 var AllMenuLayer = cc.Layer.extend({
     ctor:function(){
         this._super();
-        var action = cc.sequence(cc.time)
         this.init();
     },
     init:function(){
