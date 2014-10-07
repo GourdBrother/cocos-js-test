@@ -12,6 +12,7 @@ var AllMenuScene =  cc.Scene.extend({
 // all game need to return to the main menu, so add this static func here
 AllMenuScene.onGameReturnAllMenu = function(){
     cc.audioEngine.stopMusic(true);
+    cc.audioEngine.stopAllEffects();
     console.log("go back from game to all menu");
     var scene = new AllMenuScene();
     cc.director.runScene(new cc.TransitionFade(1.2, scene));
@@ -65,10 +66,10 @@ var AllMenuLayer = cc.Layer.extend({
                 gameSceneType = PlaneMenuScene;
                 gameResType = g_planemenures;
                 break;
-            case "Tank":
+            case "2048":
                 return ;
-                gameSceneType = TankMenuScene;
-                gameResType = g_tankmenures;
+                gameSceneType = Scene;
+                gameResType = g_sceneres;
                 break;
             case "Simple Plane":
                 gameSceneType = SimplePlaneScene;

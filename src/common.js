@@ -30,12 +30,18 @@ var NoTouchLayer = cc.Layer.extend({
     onTouchEnded:function(){
     }
 });
-function DisableTouch(target){
+
+// new notouchlayer, and make it layer's attr,so need't new again when addChild after remove
+function DisableTouchInit(layer){
     var noTouchLayer = new NoTouchLayer();
-    target.addChild(noTouchLayer, 9);
-    return noTouchLayer;
+    layer._noTouchLayer = noTouchLayer;
+    cc.log("disable touch layer init");
 }
-function EnableTouch(target, noTouchLayer){
-    target.removeChild(noTouchLayer);
+function DisableTouch(layer){
+    layer.addChild(layer._noTouchLayer, 9);
+    cc.log("disable touch");
 }
-console.log("common load");
+function EnableTouch(layer){
+    layer.removeChild(layer._noTouchLayer);
+    cc.log("enable touch");
+}

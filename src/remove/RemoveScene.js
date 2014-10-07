@@ -107,19 +107,21 @@ var RemoveLayer = cc.Layer.extend({
     },
     onTouchEnded:function(touch, event){
         var location = touch.getLocation();
-        var last_brick = event._currentTarget.bricks.PosToBrick(this.last_touch_begin);
+        var target = event.getCurrentTarget();
+
+        var last_brick = target.bricks.PosToBrick(this.last_touch_begin);
         if(last_brick.x == -1 || last_brick.y == -1){
             console.log("from envalid");
             return ;
         }
-        var now_brick = event._currentTarget.bricks.PosToBrick(location);
+        var now_brick = target.bricks.PosToBrick(location);
         if(now_brick.x == -1 || now_brick.y == -1){
             console.log("to envalid");
             return ;
         }
         if(Math.abs(now_brick.x - last_brick.x) + Math.abs(now_brick.y - last_brick.y) == 1){
             console.log("from ("+last_brick.x+","+last_brick.y+") to ("+now_brick.x+","+now_brick.y+")");
-            event._currentTarget.bricks.Switch(last_brick, now_brick);
+            target.bricks.Switch(last_brick, now_brick);
         }
     },
     last_touch_begin:null,

@@ -37,10 +37,11 @@ var Brick = cc.Sprite.extend({
         if(oldColor != undefined){
             old_png_name = Bricks.ColorRes[oldColor];
         }
-        var min = new cc.ScaleTo(0.2, 0.1);
-        var max = new cc.ScaleTo(0.2, 1);
+        var min = new cc.ScaleBy(0.2, 0.1);
+        var max = new cc.ScaleBy(0.2, 1);
         var func= function(obj, data){
             this.setTexture(data);
+            this.setScale(2.0);
         };
         var change = new cc.CallFunc(func, this, png_name);
         this.runAction( new cc.Sequence( new cc.DelayTime(waitTime), min,change, max));
@@ -70,8 +71,8 @@ var Brick = cc.Sprite.extend({
 var Bricks = cc.Class.extend({
     row_num:null,
     column_num:null,
-    brick_size:34,
-    brick_gap:38,
+    brick_size:68,
+    brick_gap:76,
     bricks:[],
     center_x:null,
     center_y:null,
@@ -98,7 +99,11 @@ var Bricks = cc.Class.extend({
         }
         //here sleep 1 for first show all brick has action, must wait
         //then after create brick, if some can remove, it's remove action can gap with create action
-        this.CheckAllLoop(1);
+        var actionTime = (this.CheckAllLoop(1)).waitTime;
+        DisableTouchInit(layer);
+        DisableTouch(layer);
+        var enableTouch = cc.callFunc(EnableTouch, this, layer);
+        layer.runAction(cc.sequence(cc.delayTime(actionTime), enableTouch));
     },
     PosToBrick:function(pos){
         var x= pos.x;
@@ -180,7 +185,7 @@ var Bricks = cc.Class.extend({
             checkTimes ++;
             waitTime += 0.5;
         }
-        return checkTimes;
+        return {checkTimes:checkTimes, waitTime:waitTime};
     },
     /**
      *

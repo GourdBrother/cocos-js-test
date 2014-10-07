@@ -1,4 +1,45 @@
 
+var CONFIG = CONFIG||{};
+CONFIG.SCORE = 0;
+
+var PlaneGameOverLayer = cc.Layer.extend({
+    ctor:function(){
+        this._super();
+        this.init();
+    },
+    init:function(){
+        var back = new cc.Sprite(res.back_png);
+        var winSize = cc.winSize;
+        this.addChild(back);
+        make_center(back);
+        var over = new cc.LabelTTF("Game Over", "Arial", 40);
+        over.setColor(cc.color.RED);
+        var score = new cc.LabelTTF("Your Score is "+ CONFIG.SCORE,  "Arial", 40);
+        score.setColor(cc.color.YELLOW);
+        var retry = new cc.LabelTTF("retry",  "Arial", 40);
+        var retryLabelItem = new cc.MenuItemLabel(retry ,this.onRetry, this);
+        var menu = new cc.Menu(retryLabelItem);
+        this.addChild(over);
+        this.addChild(score);
+        this.addChild(menu);
+        over.attr({
+            x: winSize.width/2,
+            y: winSize.height/2 +30
+        });
+        menu.attr({
+            x: winSize.width/2,
+            y: winSize.height/2 - 30
+        });
+        score.attr({
+            x: winSize.width/2,
+            y: winSize.height/2
+        });
+    },
+    onRetry:function(){
+        var scene = new SimplePlaneScene();
+        cc.director.runScene(new cc.TransitionFade(0.5, scene));
+    }
+});
 var SimplePlaneLayer = cc.Layer.extend({
     hero:null,
     pos:null,
@@ -11,8 +52,10 @@ var SimplePlaneLayer = cc.Layer.extend({
         this._super();
         this.init();
     },
+    _life:4,
     score:0,
     scoreBoard:null,
+    _lifeSprites:[],
     init:function(){
         /////////////////////////////
         // 2. add a menu item with "X" image, which is clicked to quit the program
@@ -20,16 +63,24 @@ var SimplePlaneLayer = cc.Layer.extend({
         // ask the window size
         var size = cc.winSize;
 
-        // add a "close" icon to exit the progress. it's an autorelease object
-        /*var closeItem = new cc.MenuItemImage( res.CloseNormal_png, res.CloseSelected_png, function () {
-                cc.log("Menu is clicked!");
-            }, this);
-            */
+        this._life = 4;
+        this._lifeSprites = [];
+        for(var i = 0; i< this._life; i++){
+            var sprite = cc.Sprite.create(res.plane2_png);
+            sprite.setScale(0.5);
+            sprite.attr({
+              x:30+i*30,
+              y:size.height-20
+            });
+            this.addChild(sprite, 2);
+            this._lifeSprites.push(sprite);
+        }
+
         var goBackLabel = new cc.LabelTTF("return", "Arial", 22);
         var goBackLabelItem = new cc.MenuItemLabel(goBackLabel,AllMenuScene.onGameReturnAllMenu);
         var menu = new cc.Menu(goBackLabelItem);
         menu.attr({
-            x: size.width - 20,
+            x: size.width - 30,
             y: 20
         });
         this.addChild(menu, 1);
@@ -39,8 +90,8 @@ var SimplePlaneLayer = cc.Layer.extend({
         this.addChild(back);
 
 
-        this.hero = new cc.Sprite(res.hero_png);
-        this.hero.setScale(0.25);
+        this.hero = new cc.Sprite(res.plane1_png);
+        this.hero.setScale(0.5);
         this.pos = {x:size.width/2, y:size.height/2};
         this.hero.setPosition(cc.p(this.pos.x, this.pos.y));
         this.addChild(this.hero);
@@ -57,8 +108,9 @@ var SimplePlaneLayer = cc.Layer.extend({
             onKeyPressed:this.onKeyPressed,
             onKeyReleased:this.onKeyReleased
         }, this);
-        this.schedule(this.shot, 0.1);
-        this.schedule(this.enemyUpdate, 0.5);
+        this.schedule(this.shot, 0.5);
+        this.schedule(this.enemyUpdate, 0.3);
+        // schedule's second param 0 means check every frame(1/60 s)
         this.schedule(this.hit);
         this.bullets = [];
         this.enemys = [];
@@ -69,7 +121,26 @@ var SimplePlaneLayer = cc.Layer.extend({
         this.scoreBoard.setColor(cc.color.YELLOW);
         this.scoreBoard.setPosition(cc.p(3*cc.winSize.width/4, cc.winSize.height - 40));
         this.addChild(this.scoreBoard);
+        cc.audioEngine.playEffect(res.back_mp3, true);
         return true;
+    },
+    loseLife:function(num){
+        this._life -= num;
+        for(var i = this._lifeSprites.length-1; i > this._life-1 && i >= 0; i--){
+           this.removeChild(this._lifeSprites[i]);
+        }
+        if(this._life < 0){
+            this.gameOver();
+        }
+    },
+    gameOver:function(){
+        CONFIG.SCORE = this.score;
+        cc.audioEngine.stopMusic();
+        cc.audioEngine.stopAllEffects();
+        var scene = new cc.Scene();
+        scene.addChild(new PlaneGameOverLayer);
+        cc.director.runScene(new cc.TransitionFade(1.2, scene));
+
     },
     hit:function(){
         var hero_box = this.hero.getBoundingBox();
@@ -77,7 +148,7 @@ var SimplePlaneLayer = cc.Layer.extend({
             var enemy = this.enemys[i];
             var enemy_box = enemy.getBoundingBox();
             if(cc.rectIntersectsRect(hero_box, enemy_box)){
-                this.score -= 2;
+                this.loseLife(1);
                 var enemy_index = this.enemys.indexOf(enemy);
                 if(enemy_index>-1){
                     this.enemys.splice(enemy_index, 1);
@@ -89,15 +160,19 @@ var SimplePlaneLayer = cc.Layer.extend({
             for(var j in this.bullets){
                 var bullet = this.bullets[j];
                 var bullet_box = bullet.getBoundingBox();
-                if(cc.rectIntersectsRect(bullet_box, enemy_box)){
-                    this.score ++;
+                if(cc.rectIntersectsRect(bullet_box, enemy_box)) {
+                    this.score+= enemy.score;
                     this.scoreBoard.setString(this.score);
                     cc.audioEngine.playEffect(res.hit_mp3);
 
                     var bullet_index = this.bullets.indexOf(bullet);
-                    if(bullet_index>-1){
+                    if (bullet_index > -1) {
                         this.bullets.splice(bullet_index, 1);
                         this.removeChild(bullet);
+                    }
+                    enemy.life--;
+                    if (enemy.life > 0) {
+                       return ;
                     }
                     var enemy_index = this.enemys.indexOf(enemy);
                     if(enemy_index>-1){
@@ -111,7 +186,7 @@ var SimplePlaneLayer = cc.Layer.extend({
             var enemy_bullet = this.enemy_bullets[i];
             var enemy_bullet_box = enemy_bullet.getBoundingBox();
             if(cc.rectIntersectsRect(hero_box, enemy_bullet_box)){
-                this.score --;
+                this.loseLife(1);
                 var enemy_bullet_index = this.enemy_bullets.indexOf(enemy_bullet);
                 if(enemy_bullet_index> -1){
                     this.enemy_bullets.splice(enemy_bullet_index, 1);
@@ -120,9 +195,26 @@ var SimplePlaneLayer = cc.Layer.extend({
             }
         }
     },
+    _EnemyType:[
+        {text:res.plane2_png, life:1, shot:false, size:1, speed:3,score:1},
+        {text:res.plane3_png, life:2, shot:true, size:1, speed:2, score:3},
+        {text:res.plane2_png, life:1, shot:false, size:1, speed:3, score:1},
+        {text:res.plane4_png, life:2, shot:true, size:1, speed:2, score:3},
+        {text:res.plane2_png, life:1, shot:false, size:1, speed:3, score:1},
+        {text:res.plane5_png, life:3, shot:true, size:2, speed:1, score:5}
+        ],
     enemyUpdate:function(){
-        var target = cc.Sprite.create(res.hero_png);
-        target.setScale(0.25);
+        var speedType =1.0;
+        if(this.score >100){
+            speedType = 2.0;
+        }
+        var target;
+        var type = Math.floor(Math.random()*this._EnemyType.length);
+        var enemyType = this._EnemyType[type];
+        target = cc.Sprite.create(enemyType.text);
+        target.life = enemyType.life;
+        target.score = enemyType.score;
+        target.setScale(0.5*enemyType.size);
         target.setRotation(180);
         var minX = target.getContentSize().width/2;
         var maxX = cc.winSize.width-target.getContentSize().width/2;
@@ -130,6 +222,7 @@ var SimplePlaneLayer = cc.Layer.extend({
         var minDuration = 7.0;
         var maxDuration = 10.0;
         var duration = minDuration + (maxDuration-minDuration)*Math.random();
+        duration = (duration/enemyType.speed)/speedType;
         target.setPosition(cc.p(x, cc.winSize.height-target.getContentSize().height/2));
         var actionMove = new cc.MoveTo (duration, cc.p(x, -target.getContentSize().height));
         var actionMoveDone = new cc.CallFunc(this.Fin, this);
@@ -138,11 +231,16 @@ var SimplePlaneLayer = cc.Layer.extend({
         this.addChild(target);
         this.enemys.push(target);
 
+        if(!enemyType.shot){
+            return ;
+        }
         //add enemy bullet
         var bullet = cc.Sprite.create(res.bullet_png, cc.rect(0,50,33,70));
+        bullet.setScale(0.5);
         bullet.setRotation(180);
         bullet.setPosition(cc.p(target.x, target.y));
-        duration = (target.getPosition().y/cc.winSize.height)*3;
+        //enemy bullet speed(2s to cross the screen)
+        duration = ((target.getPosition().y/cc.winSize.height)*2)/speedType;
         actionMove = new cc.MoveTo(duration, cc.p(target.getPosition().x, 0));
         actionMoveDone = new cc.CallFunc(this.Fin, this);
         bullet.runAction(new cc.Sequence(actionMove, actionMoveDone));
@@ -151,15 +249,18 @@ var SimplePlaneLayer = cc.Layer.extend({
         this.enemy_bullets.push(bullet);
     },
     shot:function(){
+        var speedType = Math.floor(this.score/50)+1;
+        this.schedule(this.shot, 0.3/speedType);
         var hero_pos = this.hero.getPosition();
-        var bulletDuration = 0.5;
+        var bulletDuration = 1;
         var bullet = cc.Sprite.create(res.bullet_png, cc.rect(0,0,33,33));
         bullet.setPosition(cc.p(hero_pos.x, hero_pos.y+ bullet.getContentSize().height));
+        //hero bullet speed(1s to cross the screen)
         var time = (cc.winSize.height - hero_pos.y - bullet.getContentSize().height/2)/cc.winSize.height;
-        var actionMove = cc.MoveTo.create(bulletDuration *time, cc.p(hero_pos.x, cc.winSize.height));
-        var actionMoveDone = cc.CallFunc.create(this.Fin, this);
-        bullet.runAction(cc.Sequence.create(actionMove, actionMoveDone));
-        cc.audioEngine.playMusic(res.shot_mp3);
+        var actionMove = cc.moveTo(bulletDuration *time, cc.p(hero_pos.x, cc.winSize.height));
+        var actionMoveDone = cc.callFunc(this.Fin, this);
+        bullet.runAction(cc.sequence(actionMove, actionMoveDone));
+        cc.audioEngine.playMusic(res.shot_mp3, false);
         bullet.setTag(1);
         this.addChild(bullet);
         this.bullets.push(bullet);
@@ -188,7 +289,7 @@ var SimplePlaneLayer = cc.Layer.extend({
                 break;
         }
     },
-    onTouchBegan:function(touch, event){
+    onTouchBegan:function(touch){
         console.log("touch begin");
         var point = touch.getLocation();
         //注意这里的touch_start是当前listener类的元素，不是layer的
@@ -200,21 +301,24 @@ var SimplePlaneLayer = cc.Layer.extend({
         var point = touch.getLocation();
         this.touch_end = {x:point.x, y:point.y};
         //通过传入的event的_currentTarget来获得this对象
-        event._currentTarget.hero.setPosition(cc.p(point.x, point.y));
+        //特别说明这种_开头的对象是私有对象，h5访问是可以的，但是编译成apk的话就访问不了了，所以这样写android上面会无法触控
+        //应该通过event.getCurrentTarget()函数来获取对象,其实就是调用一个公开的方法将私有变量获得了
+        //event._currentTarget.hero.setPosition(cc.p(point.x, point.y));
+        event.getCurrentTarget().hero.setPosition(cc.p(point.x, point.y));
     },
-    onTouchEnded:function(touch, event){
+    onTouchEnded:function(touch){
         console.log("touch end");
         var point = touch.getLocation();
         this.touch_end = {x:point.x, y:point.y};
         cc.log("("+this.touch_start.x+","+this.touch_start.y+")("+this.touch_end.x+","+this.touch_end.y+")");
-        //event._currentTarget.hero.setPosition(cc.p(this.touch_end.x, this.touch_end.y));
     },
     onKeyPressed:function(key, event){
         console.log("press");
         var x_move = 0;
         var y_move=0;
         var move_distance = 40;
-        var hero = event._currentTarget.hero;
+        //var hero = event._currentTarget.hero;
+        var hero = event.getCurrentTarget().hero;
         switch(key) {
             case 37:
                 x_move = -move_distance;
@@ -231,7 +335,7 @@ var SimplePlaneLayer = cc.Layer.extend({
         }
         hero.setPosition(cc.p(hero.x+x_move, hero.y+y_move));
     },
-    onKeyReleased:function(key, event){
+    onKeyReleased:function(){
         console.log("released");
     }
 });

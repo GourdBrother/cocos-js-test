@@ -1,19 +1,29 @@
 var res = {
-    HelloWorld_png : "res/HelloWorld.png",
-    CloseNormal_png : "res/CloseNormal.png",
-    CloseSelected_png : "res/CloseSelected.png",
+    //simple plane
     hero_png:"res/hero.png",
+    plane1_png:"res/PaperPlane.png",
+    plane2_png:"res/PaperPlaneSmall.png",
+    plane3_png:"res/GodPlane.png",
+    plane4_png:"res/LXPlane.png",
+    plane5_png:"res/XPlane.png",
     bullet_png:"res/bullet.png",
     back_png:"res/sky.png",
+    shot_mp3:"res/Music/fireEffect.mp3",
+    hit_mp3:"res/Music/explodeEffect.mp3",
+    back_mp3:"res/Music/bgMusic.mp3",
+
+    //plane
     flare_png:"res/flare.jpg",
     menu_png:"res/menu.png",
-    allmenuback_jpg:"res/allmenuback.jpg",
     buttonEffect_mp3:"res/Music/buttonEffet.mp3",
     mainMainMusic_mp3:"res/Music/mainMainMusic.mp3",
     texture_png:"res/textureTransparentPack.png",
     texture_plist:"res/textureTransparentPack.plist",
-    shot_mp3:"res/Music/fireEffect.mp3",
-    hit_mp3:"res/Music/explodeEffect.mp3",
+
+    //all menu
+    allmenuback_jpg:"res/allmenuback.jpg",
+
+    //remove brick(candy)
     brick_green_png:"res/candy/green.png",
     brick_null_png:"res/candy/null.png",
     brick_yellow_png:"res/candy/yellow.png",
@@ -24,14 +34,12 @@ var res = {
     brick_blue_png:"res/candy/blue.png",
     brick_back_mp3:"res/candy/back.mp3",
     brick_clean_mp3:"res/candy/clean.mp3"
-
 };
 
 var g_allres= [];
 var g_allmenures = [
     res.allmenuback_jpg
 ];
-var g_planemenures = [];
 var g_removeres = [
     res.brick_back_png,
     res.brick_null_png,
@@ -44,11 +52,18 @@ var g_removeres = [
     res.brick_back_mp3,
     res.brick_clean_mp3
 ];
-var g_simpleplaneres=[];
+var g_simpleplaneres=[
+    res.plane1_png,
+    res.plane2_png,
+    res.plane3_png,
+    res.plane4_png,
+    res.plane5_png,
+    res.bullet_png,
+    res.back_png,
+    res.shot_mp3,
+    res.hit_mp3,
+    res.back_mp3
+];
 for (var i in res) {
-    //for simple codeing, and make long loading time
     g_allres.push(res[i]);
-    g_planemenures.push(res[i]);
-    g_simpleplaneres.push(res[i]);
 }
-console.log("res load");
