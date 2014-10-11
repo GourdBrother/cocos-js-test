@@ -23,6 +23,9 @@ var res = {
     //all menu
     allmenuback_jpg:"res/allmenuback.jpg",
 
+    //runner
+    runner_png:"res/runner.png",
+
     //remove brick(candy)
     brick_green_png:"res/candy/green.png",
     brick_null_png:"res/candy/null.png",
@@ -39,6 +42,9 @@ var res = {
 var g_allres= [];
 var g_allmenures = [
     res.allmenuback_jpg
+];
+var g_runnerres = [
+    res.runner_png
 ];
 var g_removeres = [
     res.brick_back_png,

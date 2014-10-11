@@ -11,9 +11,11 @@
     "modules" : ["cocos2d"],
 
     "jsList" : [
-        "src/plane/resource.js",
+        "src/resource.js",
         "src/common.js",
         "src/all_menu.js",
+
+        "src/runner/Runner.js",
 
         "src/plane/simplePlane.js",
         "src/plane/menu.js",

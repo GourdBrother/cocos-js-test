@@ -36,7 +36,7 @@ var AllMenuLayer = cc.Layer.extend({
         gameLabel.attr({x:winSize.width/2, y:winSize.height - 100});
         this.addChild(gameLabel, 1);
 
-        var gameNamesArray = ["Plane", "Tank", "Simple Plane", "Remove"];
+        var gameNamesArray = ["Plane", "2048", "Simple Plane", "Remove", "Runner"];
         var gameMenuGroup = this.initGameMenuGroup(gameNamesArray);
         make_center(gameMenuGroup);
         //otherwise all games with display in the same y
@@ -62,6 +62,10 @@ var AllMenuLayer = cc.Layer.extend({
         var gameSceneType;
         var gameResType;
         switch(gameName){
+            case "Runner":
+                gameSceneType = RunnerScene;
+                gameResType = g_runnerres;
+                break;
             case "Plane":
                 gameSceneType = PlaneMenuScene;
                 gameResType = g_planemenures;
