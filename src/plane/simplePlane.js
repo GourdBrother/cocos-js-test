@@ -299,12 +299,18 @@ var SimplePlaneLayer = cc.Layer.extend({
     onTouchMoved:function(touch, event){
         console.log("touch moved");
         var point = touch.getLocation();
+        var hero = event.getCurrentTarget().hero;
+        if(Math.abs(point.x-hero.x) > 50 || Math.abs(point.y-hero.y)>50){
+            //鼠标瞬移了(非拖动),不移动
+            return ;
+        }
+
         this.touch_end = {x:point.x, y:point.y};
         //通过传入的event的_currentTarget来获得this对象
         //特别说明这种_开头的对象是私有对象，h5访问是可以的，但是编译成apk的话就访问不了了，所以这样写android上面会无法触控
         //应该通过event.getCurrentTarget()函数来获取对象,其实就是调用一个公开的方法将私有变量获得了
         //event._currentTarget.hero.setPosition(cc.p(point.x, point.y));
-        event.getCurrentTarget().hero.setPosition(cc.p(point.x, point.y));
+        hero.setPosition(cc.p(point.x, point.y));
     },
     onTouchEnded:function(touch){
         console.log("touch end");
