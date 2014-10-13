@@ -8,14 +8,15 @@
     "renderMode" : 0,
     "engineDir":"frameworks/cocos2d-html5",
 
-    "modules" : ["cocos2d"],
+    "modules" : ["cocos2d", "chipmunk"],
 
     "jsList" : [
         "src/resource.js",
         "src/common.js",
         "src/all_menu.js",
 
-        "src/runner/Runner.js",
+        "src/runner/runner.js",
+        "src/runner/globals.js",
 
         "src/plane/simplePlane.js",
         "src/plane/menu.js",
