@@ -20,7 +20,6 @@
   <object x="327.5" y="217.5" width="17" height="17"/>
   <object x="374.5" y="217.5" width="17" height="17"/>
   <object x="485.5" y="216.5" width="17" height="17"/>
-  <object x="416.5" y="206.5" width="53" height="47"/>
  </objectgroup>
  <layer name="grass" width="20" height="10">
   <data encoding="base64" compression="zlib">

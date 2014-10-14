@@ -32,7 +32,7 @@ var BackLayer = cc.Layer.extend({
         this.addChild(this.map01);
         this.scheduleUpdate();
 
-        cc.spriteFrameCache.addSpriteFrame(res.background_plist);
+        cc.spriteFrameCache.addSpriteFrames(res.background_plist);
         this.spriteSheet = new cc.SpriteBatchNode(res.background_png);
         this.addChild(this.spriteSheet);
         this.loadObjects(this.map00, 0);
@@ -46,7 +46,7 @@ var BackLayer = cc.Layer.extend({
                 this.space,
                 cc.p(coinArray[i]["x"]+this.mapWidth*mapIndex, coinArray[i]["y"])
             );
-            coin.mapIndex = mapindex;
+            coin.mapIndex = mapIndex;
             this.objects.push(coin);
         }
         var rockGroup = map.getObjectGroup("rock");
@@ -54,9 +54,9 @@ var BackLayer = cc.Layer.extend({
         for(var i=0; i< rockArray.length; i++) {
             var rock = new Rock(this.spriteSheet,
                 this.space,
-                cc.p(rockArray[i]["x"] + this.mapWidth * mapIndex, rockArray[i]["y"])
+                rockArray[i]["x"] + this.mapWidth * mapIndex
             );
-            coin.mapIndex = mapIndex;
+            rock.mapIndex = mapIndex;
             this.objects.push(rock);
         }
     },
@@ -253,7 +253,7 @@ var Coin = cc.Class.extend({
         body.setPos(pos);
         this.sprite.setBody(body);
         this.shape = new  cp.CircleShape(body, radius, cp.vzero);
-        this.shape.setCollisionType(SpriteTag.coin);
+        this.shape.setCollisionType(TagOfSprite.coin);
         this.shape.setSensor(true);
         this.space.addStaticShape(this.shape);
         this.sprite.runAction(action);
@@ -266,7 +266,7 @@ var Coin = cc.Class.extend({
         this.sprite = null;
     },
     getShape:function(){
-        return this.shape();
+        return this.shape;
     }
 });
 var Rock = cc.Class.extend({
@@ -284,15 +284,15 @@ var Rock = cc.Class.extend({
         this.space = space;
         this.sprite = new cc.PhysicsSprite("#rock.png");
         var body = new cp.StaticBody();
-        body.setPos(cc.p(posX, this.sprite.getContentSize.height/2 + g_groundHight));
+        body.setPos(cc.p(posX, this.sprite.getContentSize().height/2 + g_groundHight));
         this.sprite.setBody(body);
         this.shape = new  cp.BoxShape(body,
             this.sprite.getContentSize().width,
             this.sprite.getContentSize().height
         );
-        this.shape.setCollisionType(SpriteTag.rock);
+        this.shape.setCollisionType(TagOfSprite.rock);
         this.space.addStaticShape(this.shape);
-        spriteSheet.addChild(this.sprite, 1);
+        spriteSheet.addChild(this.sprite);
     },
     removeFromParent:function(){
         this.space.removeStaticShape(this.shape);
@@ -301,6 +301,6 @@ var Rock = cc.Class.extend({
         this.sprite = null;
     },
     getShape:function(){
-        return this.shape();
+        return this.shape;
     }
 });
