@@ -27,6 +27,11 @@ var res = {
     PlayBG_png:"res/runner/PlayBG.png",
     runner_png:"res/runner/runner.png",
     runner_plist:"res/runner/running.plist",
+    map_png:"res/runner/map.png",
+    map00_tmx:"res/runner/map00.tmx",
+    map01_tmx:"res/runner/map01.tmx",
+    background_png:"res/runner/background.png",
+    background_plist:"res/runner/background.plist",
 
     //remove brick(candy)
     brick_green_png:"res/candy/green.png",
@@ -48,7 +53,12 @@ var g_allmenures = [
 var g_runnerres = [
     res.PlayBG_png,
     res.runner_png,
-    res.runner_plist
+    res.runner_plist,
+    res.map_png,
+    res.map00_tmx,
+    res.map01_tmx,
+    res.background_plist,
+    res.background_png
 ];
 var g_removeres = [
     res.brick_back_png,

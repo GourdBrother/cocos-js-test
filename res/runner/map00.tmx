@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="map" tilewidth="32" tileheight="32">
+  <image source="map.png" width="128" height="128"/>
+ </tileset>
+ <layer name="background" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJztyzkKACAQBMFd7wP9/3PtcBJjE4NioGGmmc3ve6RjICLBEWRv3eWrfWGjoiGjyN56lq/2AzHrB70=
+  </data>
+ </layer>
+ <objectgroup name="rock">
+  <object x="175" y="206" width="53" height="47"/>
+ </objectgroup>
+ <objectgroup name="coin">
+  <object x="274" y="120" width="17" height="17"/>
+  <object x="277" y="215" width="18" height="20"/>
+  <object x="327.5" y="119.5" width="17" height="17"/>
+  <object x="327.5" y="152.5" width="17" height="17"/>
+  <object x="328.5" y="190.5" width="17" height="17"/>
+  <object x="327.5" y="217.5" width="17" height="17"/>
+  <object x="374.5" y="217.5" width="17" height="17"/>
+  <object x="485.5" y="216.5" width="17" height="17"/>
+  <object x="416.5" y="206.5" width="53" height="47"/>
+ </objectgroup>
+ <layer name="grass" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo4B4wA/EAlSkBzsAAPeoATc=
+  </data>
+ </layer>
+</map>
